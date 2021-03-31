@@ -1,0 +1,5 @@
+group,id,email,role,type,status
+group1,4711,presentBothLocalAndRemote@example.org,MEMBER,USER,
+group1,4712,presentOnlyRemote@example.org,MEMBER,USER,
+catchall,4711,presentBothLocalAndRemote@example.org,MEMBER,USER,
+catchall,4712,presentOnlyRemote@example.org,MEMBER,USER,

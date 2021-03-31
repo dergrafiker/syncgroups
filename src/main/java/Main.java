@@ -10,8 +10,13 @@ import static java.util.stream.Collectors.toSet;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        Map<String, Set<String>> localMapping = ReadResources.readMemberMapFromExternalFile("mapping");
-        Map<String, Set<String>> fromRemote = ReadResources.getMemberMapFromRemoteCSV("out.csv", args[1]);
+        String catchAll="catchall";
+//        catchAll = args[0];
+        String groupReplacement="";
+//        groupReplacement = args[1];
+
+        Map<String, Set<String>> localMapping = ReadResources.readMemberMapFromExternalFile("mapping.example");
+        Map<String, Set<String>> fromRemote = ReadResources.getMemberMapFromRemoteCSV("out.example.csv", groupReplacement);
 
         for (String group : combine(localMapping.keySet(), fromRemote.keySet())) {
             Set<String> local = localMapping.get(group);
@@ -25,8 +30,6 @@ public class Main {
                 showDiff(group, local, remote);
             }
         }
-
-        String catchAll = args[0];
 
         Set<String> allMailsInLocalMapping = localMapping.values().stream().flatMap(Collection::stream).collect(toSet());
         Set<String> allMailsFromRemote = fromRemote.get(catchAll);
