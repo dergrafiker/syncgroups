@@ -46,7 +46,7 @@ public class ReadResources {
                 .parse(new InputStreamReader(resource.openStream()));
 
         return records.getRecords().stream()
-                .collect(Collectors.groupingBy(record -> record.get("group").replace(groupReplacement, ""),
+                .collect(Collectors.groupingBy(record -> record.get("group").toLowerCase().replace(groupReplacement, ""),
                         mapping(record -> record.get("email").toLowerCase(),
                                 toSet()))
                 );
