@@ -10,13 +10,11 @@ import static java.util.stream.Collectors.toSet;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        String catchAll="catchall";
-//        catchAll = args[0];
-        String groupReplacement="";
-//        groupReplacement = args[1];
+        String catchAll = args[0];
+        String groupReplacement = args[1];
 
-        Map<String, Set<String>> localMapping = ReadResources.readMemberMapFromExternalFile("mapping.example");
-        Map<String, Set<String>> fromRemote = ReadResources.getMemberMapFromRemoteCSV("out.example.csv", groupReplacement);
+        Map<String, Set<String>> localMapping = ReadResources.readMemberMapFromExternalFile("mapping");
+        Map<String, Set<String>> fromRemote = ReadResources.getMemberMapFromRemoteCSV("out.csv", groupReplacement);
 
         for (String group : combine(localMapping.keySet(), fromRemote.keySet())) {
             Set<String> local = localMapping.get(group);
