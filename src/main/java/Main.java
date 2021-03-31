@@ -1,30 +1,19 @@
 import com.google.common.collect.Sets;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toSet;
 
 public class Main {
     public static void main(String[] args) throws IOException {
         Map<String, Set<String>> localMapping = ReadResources.readMemberMapFromExternalFile("mapping");
+        Map<String, Set<String>> fromRemote = ReadResources.getMemberMapFromRemoteCSV("out.csv", args[1]);
 
-        Map<String, Set<String>> fromRemote = getMemberMapFromRemoteCSV("out.csv", args[1]);
-
-        Set<String> allGroups = new HashSet<>();
-        allGroups.addAll(localMapping.keySet());
-        allGroups.addAll(fromRemote.keySet());
-
-        for (String group : allGroups) {
+        for (String group : combine(localMapping.keySet(), fromRemote.keySet())) {
             Set<String> local = localMapping.get(group);
             Set<String> remote = fromRemote.get(group);
 
@@ -45,18 +34,13 @@ public class Main {
         showDiff(catchAll, allMailsInLocalMapping, allMailsFromRemote);
     }
 
-    private static Map<String, Set<String>> getMemberMapFromRemoteCSV(String resourceName, String groupReplacement) throws IOException {
-        URL resource = Main.class.getResource(resourceName);
-
-        CSVParser records = CSVFormat.RFC4180
-                .withFirstRecordAsHeader()
-                .parse(new InputStreamReader(resource.openStream()));
-
-        return records.getRecords().stream()
-                .collect(Collectors.groupingBy(record -> record.get("group").replace(groupReplacement, ""),
-                        mapping(record -> record.get("email").toLowerCase(),
-                                toSet()))
-                );
+    @SafeVarargs
+    private static Set<String> combine(Set<String>... sets) {
+        Set<String> allGroups = new HashSet<>();
+        for (Set<String> set : sets) {
+            allGroups.addAll(set);
+        }
+        return allGroups;
     }
 
     private static void showDiff(String group, Set<String> local, Set<String> remote) {

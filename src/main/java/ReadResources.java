@@ -1,7 +1,11 @@
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -32,5 +36,19 @@ public class ReadResources {
                         mapping(strings -> strings[1], toSet())
                 ));
 
+    }
+
+    static Map<String, Set<String>> getMemberMapFromRemoteCSV(String resourceName, String groupReplacement) throws IOException {
+        URL resource = Main.class.getResource(resourceName);
+
+        CSVParser records = CSVFormat.RFC4180
+                .withFirstRecordAsHeader()
+                .parse(new InputStreamReader(resource.openStream()));
+
+        return records.getRecords().stream()
+                .collect(Collectors.groupingBy(record -> record.get("group").replace(groupReplacement, ""),
+                        mapping(record -> record.get("email").toLowerCase(),
+                                toSet()))
+                );
     }
 }
