@@ -16,8 +16,8 @@ public class Main {
         Map<String, Set<String>> fromRemote = ReadResources.getMemberMapFromRemoteCSV("out.csv");
 
         for (String group : combine(localMapping.keySet(), fromRemote.keySet())) {
-            if(group.equalsIgnoreCase(catchAll)) {
-                System.out.println("skipping catchall group: "+catchAll);
+            if (group.equalsIgnoreCase(catchAll)) {
+                System.out.println("skipping catchall group: " + catchAll);
                 continue;
             }
 
