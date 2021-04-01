@@ -11,12 +11,16 @@ import static java.util.stream.Collectors.toSet;
 public class Main {
     public static void main(String[] args) throws IOException {
         String catchAll = args[0];
-        String groupReplacement = args[1];
 
         Map<String, Set<String>> localMapping = ReadResources.readMemberMapFromExternalFile("mapping");
-        Map<String, Set<String>> fromRemote = ReadResources.getMemberMapFromRemoteCSV("out.csv", groupReplacement);
+        Map<String, Set<String>> fromRemote = ReadResources.getMemberMapFromRemoteCSV("out.csv");
 
         for (String group : combine(localMapping.keySet(), fromRemote.keySet())) {
+            if(group.equalsIgnoreCase(catchAll)) {
+                System.out.println("skipping catchall group: "+catchAll);
+                continue;
+            }
+
             Set<String> local = localMapping.get(group);
             Set<String> remote = fromRemote.get(group);
 

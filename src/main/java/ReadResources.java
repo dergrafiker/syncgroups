@@ -1,5 +1,6 @@
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -38,7 +39,7 @@ public class ReadResources {
 
     }
 
-    static Map<String, Set<String>> getMemberMapFromRemoteCSV(String resourceName, String groupReplacement) throws IOException {
+    static Map<String, Set<String>> getMemberMapFromRemoteCSV(String resourceName) throws IOException {
         URL resource = Main.class.getResource(resourceName);
 
         CSVParser records = CSVFormat.RFC4180
@@ -46,7 +47,7 @@ public class ReadResources {
                 .parse(new InputStreamReader(resource.openStream()));
 
         return records.getRecords().stream()
-                .collect(Collectors.groupingBy(record -> record.get("group").toLowerCase().replace(groupReplacement, ""),
+                .collect(Collectors.groupingBy(record -> StringUtils.substringBefore(record.get("group").toLowerCase(),"@"),
                         mapping(record -> record.get("email").toLowerCase(),
                                 toSet()))
                 );
