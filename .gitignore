@@ -3,4 +3,4 @@
 /.idea/
 /*.iml
 /src/main/resources/mapping
-/src/main/resources/out.csv
+/src/main/resources/groups.csv
