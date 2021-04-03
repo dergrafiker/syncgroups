@@ -13,7 +13,7 @@ public class Main {
         String catchAll = args[0];
 
         Map<String, Set<String>> localMapping = ReadResources.readMemberMapFromExternalFile("mapping");
-        Map<String, Set<String>> fromRemote = ReadResources.getMemberMapFromRemoteCSV("out.csv");
+        Map<String, Set<String>> fromRemote = ReadResources.getMemberMapFromRemoteCSV("groups.csv");
 
         for (String group : combine(localMapping.keySet(), fromRemote.keySet())) {
             if (group.equalsIgnoreCase(catchAll)) {
