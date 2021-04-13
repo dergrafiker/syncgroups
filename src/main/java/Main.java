@@ -1,8 +1,11 @@
 import com.google.common.collect.Sets;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,6 +19,10 @@ public class Main {
         Map<String, Set<String>> localMapping = ReadResources.readMemberMapFromExternalFile("mapping");
         Map<String, Set<String>> fromRemote = ReadResources.getMemberMapFromRemoteCSV("groups.csv");
 
+        List<String> onlyRemote = new ArrayList<>();
+        List<String> onlyLocal = new ArrayList<>();
+        List<String> modifyCommands = new ArrayList<>();
+
         for (String group : combine(localMapping.keySet(), fromRemote.keySet())) {
             if (group.equalsIgnoreCase(catchAll)) {
                 System.out.println("skipping catchall group: " + catchAll);
@@ -26,18 +33,24 @@ public class Main {
             Set<String> remote = fromRemote.get(group);
 
             if (local == null) {
-                System.out.println(group + " is found only in remote");
+                onlyRemote.add(group);
             } else if (remote == null) {
-                System.out.println(group + " is found only in local");
+                onlyLocal.add(group);
             } else {
-                showDiff(group, local, remote, groupSuffix);
+                showDiff(group, local, remote, groupSuffix, modifyCommands);
             }
         }
 
         Set<String> allMailsInLocalMapping = localMapping.values().stream().flatMap(Collection::stream).collect(toSet());
         Set<String> allMailsFromRemote = fromRemote.get(catchAll);
 
-        showDiff(catchAll, allMailsInLocalMapping, allMailsFromRemote, groupSuffix);
+        showDiff(catchAll, allMailsInLocalMapping, allMailsFromRemote, groupSuffix, modifyCommands);
+
+        System.out.println("groups found only remote: " + StringUtils.join(onlyRemote, ", "));
+        System.out.println("groups found only local: " + StringUtils.join(onlyLocal, ", "));
+        System.out.println();
+        System.out.println("run following commands to match groups to mapping:");
+        modifyCommands.forEach(System.out::println);
     }
 
     @SafeVarargs
@@ -49,15 +62,15 @@ public class Main {
         return allGroups;
     }
 
-    private static void showDiff(String group, Set<String> local, Set<String> remote, String groupSuffix) {
+    private static void showDiff(String group, Set<String> local, Set<String> remote, String groupSuffix, List<String> modifyCommands) {
         Sets.SetView<String> localNotRemote = Sets.difference(local, remote);
         Sets.SetView<String> remoteNotLocal = Sets.difference(remote, local);
 
         for (String user : localNotRemote) {
-            System.out.println("gam update group " + group + groupSuffix + " add " + user);
+            modifyCommands.add("gam update group " + group + groupSuffix + " add " + user);
         }
         for (String user : remoteNotLocal) {
-            System.out.println("gam update group " + group + groupSuffix + " remove " + user);
+            modifyCommands.add("gam update group " + group + groupSuffix + " remove " + user);
         }
     }
 }
