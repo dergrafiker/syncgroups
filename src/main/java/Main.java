@@ -11,6 +11,7 @@ import static java.util.stream.Collectors.toSet;
 public class Main {
     public static void main(String[] args) throws IOException {
         String catchAll = args[0];
+        String groupSuffix = args[1];
 
         Map<String, Set<String>> localMapping = ReadResources.readMemberMapFromExternalFile("mapping");
         Map<String, Set<String>> fromRemote = ReadResources.getMemberMapFromRemoteCSV("groups.csv");
@@ -29,14 +30,14 @@ public class Main {
             } else if (remote == null) {
                 System.out.println(group + " is found only in local");
             } else {
-                showDiff(group, local, remote);
+                showDiff(group, local, remote, groupSuffix);
             }
         }
 
         Set<String> allMailsInLocalMapping = localMapping.values().stream().flatMap(Collection::stream).collect(toSet());
         Set<String> allMailsFromRemote = fromRemote.get(catchAll);
 
-        showDiff(catchAll, allMailsInLocalMapping, allMailsFromRemote);
+        showDiff(catchAll, allMailsInLocalMapping, allMailsFromRemote, groupSuffix);
     }
 
     @SafeVarargs
@@ -48,15 +49,15 @@ public class Main {
         return allGroups;
     }
 
-    private static void showDiff(String group, Set<String> local, Set<String> remote) {
+    private static void showDiff(String group, Set<String> local, Set<String> remote, String groupSuffix) {
         Sets.SetView<String> localNotRemote = Sets.difference(local, remote);
         Sets.SetView<String> remoteNotLocal = Sets.difference(remote, local);
 
         for (String user : localNotRemote) {
-            System.out.println("add " + user + " to " + group);
+            System.out.println("gam update group " + group + groupSuffix + " add " + user);
         }
         for (String user : remoteNotLocal) {
-            System.out.println("delete " + user + " from " + group);
+            System.out.println("gam update group " + group + groupSuffix + " remove " + user);
         }
     }
 }
