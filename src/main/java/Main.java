@@ -24,7 +24,8 @@ public class Main {
 
         List<String> onlyRemote = new ArrayList<>();
         List<String> onlyLocal = new ArrayList<>();
-        List<String> modifyCommands = new ArrayList<>();
+        List<String> addCommands = new ArrayList<>();
+        List<String> removeCommands = new ArrayList<>();
         Multimap<String, String> user2group = HashMultimap.create();
 
         for (String group : combine(localMapping.keySet(), fromRemote.keySet())) {
@@ -41,14 +42,14 @@ public class Main {
             } else if (remote == null) {
                 onlyLocal.add(group);
             } else {
-                showDiff(group, local, remote, groupSuffix, modifyCommands, user2group);
+                showDiff(group, local, remote, groupSuffix, addCommands, removeCommands, user2group);
             }
         }
 
         Set<String> allMailsInLocalMapping = localMapping.values().stream().flatMap(Collection::stream).collect(toSet());
         Set<String> allMailsFromRemote = fromRemote.get(catchAll);
 
-        showDiff(catchAll, allMailsInLocalMapping, allMailsFromRemote, groupSuffix, modifyCommands, user2group);
+        showDiff(catchAll, allMailsInLocalMapping, allMailsFromRemote, groupSuffix, addCommands, removeCommands, user2group);
 
         Set<String> needsToHaveOneInEachGroup = fromRemote.get(needsToHaveOneInEachGroupKey);
         fromRemote.forEach((key, value) -> {
@@ -63,7 +64,9 @@ public class Main {
         user2group.keySet().forEach(key -> System.out.println(key + " " + user2group.get(key)));
         System.out.println();
         System.out.println("run following commands to match groups to mapping:");
-        modifyCommands.forEach(System.out::println);
+        addCommands.forEach(System.out::println);
+        System.out.println();
+        removeCommands.forEach(System.out::println);
     }
 
     @SafeVarargs
@@ -79,18 +82,19 @@ public class Main {
                                  Set<String> local,
                                  Set<String> remote,
                                  String groupSuffix,
-                                 List<String> modifyCommands,
+                                 List<String> addCommands,
+                                 List<String> removeCommands,
                                  Multimap<String, String> user2group) {
         Sets.SetView<String> localNotRemote = Sets.difference(local, remote);
         Sets.SetView<String> remoteNotLocal = Sets.difference(remote, local);
 
         for (String user : localNotRemote) {
             user2group.get(user).add("+" + group);
-            modifyCommands.add("gam update group " + group + groupSuffix + " add " + user);
+            addCommands.add("gam update group " + group + groupSuffix + " add " + user);
         }
         for (String user : remoteNotLocal) {
             user2group.get(user).add("-" + group);
-            modifyCommands.add("gam update group " + group + groupSuffix + " remove " + user);
+            removeCommands.add("gam update group " + group + groupSuffix + " remove " + user);
         }
     }
 }
