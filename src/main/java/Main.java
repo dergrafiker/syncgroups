@@ -19,47 +19,46 @@ public class Main {
         String groupSuffix = args[1];
         String needsToHaveOneInEachGroupKey = args[2];
 
-        Map<String, Set<String>> localMapping = ReadResources.readMemberMapFromExternalFile("mapping");
-        Map<String, Set<String>> fromRemote = ReadResources.getMemberMapFromRemoteCSV("groups.csv");
+        Map<String, Set<String>> localGroupToUserMap = ReadResources.readIntendedGroupToUserMapFromExternalFile("mapping");
+        Map<String, Set<String>> remoteGroupToUserMap = ReadResources.readCurrentGroupToUserMapFromRemoteCSV("groups.csv");
 
-        List<String> onlyRemote = new ArrayList<>();
-        List<String> onlyLocal = new ArrayList<>();
+        List<String> groupsFoundOnlyOnRemoteEnd = new ArrayList<>();
+        List<String> groupsFoundOnlyOnLocalEnd = new ArrayList<>();
         List<String> addCommands = new ArrayList<>();
         List<String> removeCommands = new ArrayList<>();
         Multimap<String, String> user2group = HashMultimap.create();
 
-        for (String group : combine(localMapping.keySet(), fromRemote.keySet())) {
+        Set<String> allKnownGroups = combine(localGroupToUserMap.keySet(), remoteGroupToUserMap.keySet());
+        for (String group : allKnownGroups) {
             if (group.equalsIgnoreCase(catchAll)) {
                 System.out.println("skipping catchall group: " + catchAll);
                 continue;
             }
 
-            Set<String> local = localMapping.get(group);
-            Set<String> remote = fromRemote.get(group);
-
-            if (local == null) {
-                onlyRemote.add(group);
-            } else if (remote == null) {
-                onlyLocal.add(group);
+            if (!localGroupToUserMap.containsKey(group)) {
+                groupsFoundOnlyOnRemoteEnd.add(group);
+            } else if (!remoteGroupToUserMap.containsKey(group)) {
+                groupsFoundOnlyOnLocalEnd.add(group);
             } else {
-                showDiff(group, local, remote, groupSuffix, addCommands, removeCommands, user2group);
+                collectDifferences(group, localGroupToUserMap.get(group), remoteGroupToUserMap.get(group),
+                        groupSuffix, addCommands, removeCommands, user2group);
             }
         }
 
-        Set<String> allMailsInLocalMapping = localMapping.values().stream().flatMap(Collection::stream).collect(toSet());
-        Set<String> allMailsFromRemote = fromRemote.get(catchAll);
+        //collect Differences for catchall group
+        Set<String> allMailsInLocalMapping = localGroupToUserMap.values().stream().flatMap(Collection::stream).collect(toSet());
+        Set<String> allMailsFromRemote = remoteGroupToUserMap.get(catchAll);
+        collectDifferences(catchAll, allMailsInLocalMapping, allMailsFromRemote, groupSuffix, addCommands, removeCommands, user2group);
 
-        showDiff(catchAll, allMailsInLocalMapping, allMailsFromRemote, groupSuffix, addCommands, removeCommands, user2group);
-
-        Set<String> needsToHaveOneInEachGroup = fromRemote.get(needsToHaveOneInEachGroupKey);
-        fromRemote.forEach((key, value) -> {
+        Set<String> needsToHaveOneInEachGroup = remoteGroupToUserMap.get(needsToHaveOneInEachGroupKey);
+        remoteGroupToUserMap.forEach((key, value) -> {
             if (Sets.intersection(value, needsToHaveOneInEachGroup).isEmpty()) {
                 System.out.println(key + " has no intersection with " + needsToHaveOneInEachGroupKey);
             }
         });
         System.out.println();
-        System.out.println("groups found only remote: " + StringUtils.join(onlyRemote, ", "));
-        System.out.println("groups found only local: " + StringUtils.join(onlyLocal, ", "));
+        System.out.println("groups found only remote: " + StringUtils.join(groupsFoundOnlyOnRemoteEnd, ", "));
+        System.out.println("groups found only local: " + StringUtils.join(groupsFoundOnlyOnLocalEnd, ", "));
         System.out.println();
         user2group.keySet().forEach(key -> System.out.println(key + " " + user2group.get(key)));
         System.out.println();
@@ -78,23 +77,32 @@ public class Main {
         return allGroups;
     }
 
-    private static void showDiff(String group,
-                                 Set<String> local,
-                                 Set<String> remote,
-                                 String groupSuffix,
-                                 List<String> addCommands,
-                                 List<String> removeCommands,
-                                 Multimap<String, String> user2group) {
-        Sets.SetView<String> localNotRemote = Sets.difference(local, remote);
-        Sets.SetView<String> remoteNotLocal = Sets.difference(remote, local);
+    private static void collectDifferences(String group,
+                                           Set<String> usersFromIntendedMapping,
+                                           Set<String> usersFromRemoteMapping,
+                                           String groupSuffix,
+                                           List<String> addCommands,
+                                           List<String> removeCommands,
+                                           Multimap<String, String> user2group) {
+        collectUsersToAdd(group, usersFromIntendedMapping, usersFromRemoteMapping, groupSuffix, addCommands, user2group);
+        collectUsersToRemove(group, usersFromIntendedMapping, usersFromRemoteMapping, groupSuffix, removeCommands, user2group);
+    }
 
+    private static void collectUsersToRemove(String groupWhereUserIsMissing, Set<String> usersFromIntendedMapping, Set<String> usersFromRemoteMapping,
+                                             String groupSuffix, List<String> removeCommands, Multimap<String, String> user2group) {
+        Sets.SetView<String> remoteNotLocal = Sets.difference(usersFromRemoteMapping, usersFromIntendedMapping);
+        for (String user : remoteNotLocal) {
+            user2group.get(user).add("-" + groupWhereUserIsMissing);
+            removeCommands.add("gam update group " + groupWhereUserIsMissing + groupSuffix + " remove " + user);
+        }
+    }
+
+    private static void collectUsersToAdd(String group, Set<String> usersFromIntendedMapping, Set<String> usersFromRemoteMapping,
+                                          String groupSuffix, List<String> addCommands, Multimap<String, String> user2group) {
+        Sets.SetView<String> localNotRemote = Sets.difference(usersFromIntendedMapping, usersFromRemoteMapping);
         for (String user : localNotRemote) {
             user2group.get(user).add("+" + group);
             addCommands.add("gam update group " + group + groupSuffix + " add " + user);
-        }
-        for (String user : remoteNotLocal) {
-            user2group.get(user).add("-" + group);
-            removeCommands.add("gam update group " + group + groupSuffix + " remove " + user);
         }
     }
 }

@@ -29,7 +29,7 @@ public class ReadResources {
         }
     }
 
-    static Map<String, Set<String>> readMemberMapFromExternalFile(String resourceName) throws IOException {
+    static Map<String, Set<String>> readIntendedGroupToUserMapFromExternalFile(String resourceName) throws IOException {
         return readLinesFromExternalFile(resourceName).stream()
                 .map(String::toLowerCase)
                 .map(line -> line.split(":"))
@@ -39,7 +39,7 @@ public class ReadResources {
 
     }
 
-    static Map<String, Set<String>> getMemberMapFromRemoteCSV(String resourceName) throws IOException {
+    static Map<String, Set<String>> readCurrentGroupToUserMapFromRemoteCSV(String resourceName) throws IOException {
         URL resource = Main.class.getResource(resourceName);
 
         CSVParser records = CSVFormat.RFC4180
