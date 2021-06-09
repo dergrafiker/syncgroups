@@ -50,9 +50,12 @@ public class Main {
         Set<String> allMailsFromRemote = remoteGroupToUserMap.get(catchAll);
         collectDifferences(catchAll, allMailsInLocalMapping, allMailsFromRemote, groupSuffix, addCommands, removeCommands, user2group);
 
-        Set<String> needsToHaveOneInEachGroup = remoteGroupToUserMap.get(needsToHaveOneInEachGroupKey);
+        Set<String> usersThatShouldBePresentInOtherGroups = new HashSet<>();
+        usersThatShouldBePresentInOtherGroups.addAll(remoteGroupToUserMap.get(needsToHaveOneInEachGroupKey));
+        usersThatShouldBePresentInOtherGroups.addAll(localGroupToUserMap.get(needsToHaveOneInEachGroupKey));
+
         remoteGroupToUserMap.forEach((key, value) -> {
-            if (Sets.intersection(value, needsToHaveOneInEachGroup).isEmpty()) {
+            if (Sets.intersection(value, usersThatShouldBePresentInOtherGroups).isEmpty()) {
                 System.out.println(key + " has no intersection with " + needsToHaveOneInEachGroupKey);
             }
         });
