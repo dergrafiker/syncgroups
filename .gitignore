@@ -2,5 +2,5 @@
 /target/
 /.idea/
 /*.iml
-/src/main/resources/mapping
 /src/main/resources/groups.csv
+/src/main/resources/mapping*
