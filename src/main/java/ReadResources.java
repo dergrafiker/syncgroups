@@ -10,11 +10,13 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 public class ReadResources {
@@ -25,7 +27,7 @@ public class ReadResources {
             }
             return new BufferedReader(new InputStreamReader(resourceAsStream, StandardCharsets.UTF_8))
                     .lines()
-                    .collect(Collectors.toList());
+                    .collect(toList());
         }
     }
 
@@ -42,14 +44,20 @@ public class ReadResources {
     static Map<String, Set<String>> readCurrentGroupToUserMapFromRemoteCSV(String resourceName) throws IOException {
         URL resource = Main.class.getResource(resourceName);
 
-        CSVParser records = CSVFormat.DEFAULT
-                .withFirstRecordAsHeader()
-                .parse(new InputStreamReader(resource.openStream()));
+        if (Objects.isNull(resource)) {
+            throw new RuntimeException("Problem while reading file " + resourceName);
+        }
 
-        return records.getRecords().stream()
-                .collect(Collectors.groupingBy(record -> StringUtils.substringBefore(record.get("group").toLowerCase(),"@"),
-                        mapping(record -> record.get("email").toLowerCase(),
-                                toSet()))
-                );
+        try (InputStreamReader inputStreamReader = new InputStreamReader(resource.openStream())) {
+            CSVParser records = CSVFormat.DEFAULT
+                    .withFirstRecordAsHeader()
+                    .parse(inputStreamReader);
+
+            return records.getRecords().stream()
+                    .collect(Collectors.groupingBy(record -> StringUtils.substringBefore(record.get("group").toLowerCase(), "@"),
+                            mapping(record -> record.get("email").toLowerCase(),
+                                    toSet()))
+                    );
+        }
     }
 }
