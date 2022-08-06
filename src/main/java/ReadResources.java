@@ -42,7 +42,7 @@ public class ReadResources {
     static Map<String, Set<String>> readCurrentGroupToUserMapFromRemoteCSV(String resourceName) throws IOException {
         URL resource = Main.class.getResource(resourceName);
 
-        CSVParser records = CSVFormat.RFC4180
+        CSVParser records = CSVFormat.DEFAULT
                 .withFirstRecordAsHeader()
                 .parse(new InputStreamReader(resource.openStream()));
 
