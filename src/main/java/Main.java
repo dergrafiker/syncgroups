@@ -3,6 +3,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
+import org.tinylog.Logger;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -93,7 +94,11 @@ public class Main {
                     .omitEmptyStrings();
 
             return allLines.stream()
-                    .flatMap(s -> splitter.splitToList(s).stream())
+                    .flatMap(s -> {
+                        List<String> strings = splitter.splitToList(s);
+                        Logger.debug("{} => {}", s, strings);
+                        return strings.stream();
+                    })
                     .collect(Collectors.toSet());
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
