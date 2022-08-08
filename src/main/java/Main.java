@@ -28,9 +28,17 @@ public class Main {
         String groupSuffix = args[1];
         String needsToHaveOneInEachGroupKey = args[2];
 
-        Set<String> uniqueMailAdresses = getUniqueMailAdresses("allmembers");
-
         Map<String, Set<String>> localGroupToUserMap = ReadResources.readIntendedGroupToUserMapFromExternalFile("mapping");
+
+        /*
+        //find diff between allUsers and localMapping
+        Set<String> uniqueMailAdresses = getUniqueMailAdresses("allmembers");
+        Set<String> allUsersFromMapping = localGroupToUserMap.values().stream().flatMap(Collection::stream).collect(toSet());
+        Sets.SetView<String> first = Sets.difference(uniqueMailAdresses, allUsersFromMapping);
+        Sets.SetView<String> second = Sets.difference(allUsersFromMapping, uniqueMailAdresses);
+        System.out.println();
+         */
+
         Map<String, Set<String>> remoteGroupToUserMap = ReadResources.readCurrentGroupToUserMapFromRemoteCSV("groups.csv");
 
         List<String> groupsFoundOnlyOnRemoteEnd = new ArrayList<>();
@@ -97,7 +105,7 @@ public class Main {
                     .flatMap(s -> {
                         List<String> strings = splitter.splitToList(s);
                         Logger.debug("{} => {}", s, strings);
-                        return strings.stream();
+                        return strings.stream().map(String::toLowerCase);
                     })
                     .collect(Collectors.toSet());
         } catch (URISyntaxException e) {
