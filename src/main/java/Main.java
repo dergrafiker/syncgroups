@@ -1,15 +1,23 @@
+import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -18,6 +26,8 @@ public class Main {
         String catchAll = args[0];
         String groupSuffix = args[1];
         String needsToHaveOneInEachGroupKey = args[2];
+
+        Set<String> uniqueMailAdresses = getUniqueMailAdresses("allmembers");
 
         Map<String, Set<String>> localGroupToUserMap = ReadResources.readIntendedGroupToUserMapFromExternalFile("mapping");
         Map<String, Set<String>> remoteGroupToUserMap = ReadResources.readCurrentGroupToUserMapFromRemoteCSV("groups.csv");
@@ -69,6 +79,25 @@ public class Main {
         addCommands.forEach(System.out::println);
         System.out.println();
         removeCommands.forEach(System.out::println);
+    }
+
+    private static Set<String> getUniqueMailAdresses(String resourceName) throws IOException {
+        try {
+            URL allmembers = Main.class.getResource(resourceName);
+            Objects.requireNonNull(allmembers);
+            Path path = Paths.get(allmembers.toURI());
+            List<String> allLines = Files.readAllLines(path);
+
+            Splitter splitter = Splitter.onPattern("[;\\s]+")
+                    .trimResults()
+                    .omitEmptyStrings();
+
+            return allLines.stream()
+                    .flatMap(s -> splitter.splitToList(s).stream())
+                    .collect(Collectors.toSet());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @SafeVarargs
