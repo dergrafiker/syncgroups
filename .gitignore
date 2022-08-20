@@ -6,3 +6,4 @@
 /src/main/resources/mapping*
 /.run/
 /src/main/resources/allmembers
+/src/main/resources/remoteGroups

@@ -42,13 +42,15 @@ public class Main {
 
         Map<String, Set<String>> remoteGroupToUserMap = ReadResources.readCurrentGroupToUserMapFromRemoteCSV("groups.csv");
 
+        Set<String> allRemoteGroups = ReadResources.readAllRemoteGroups("remoteGroups");
+
         List<String> groupsFoundOnlyOnRemoteEnd = new ArrayList<>();
         List<String> groupsFoundOnlyOnLocalEnd = new ArrayList<>();
         List<String> addCommands = new ArrayList<>();
         List<String> removeCommands = new ArrayList<>();
         Multimap<String, String> user2group = HashMultimap.create();
 
-        Set<String> allKnownGroups = combine(localGroupToUserMap.keySet(), remoteGroupToUserMap.keySet());
+        Set<String> allKnownGroups = combine(localGroupToUserMap.keySet(), allRemoteGroups);
         for (String group : allKnownGroups) {
             if (group.equalsIgnoreCase(catchAll)) {
                 System.out.println("skipping catchall group: " + catchAll);
@@ -57,10 +59,12 @@ public class Main {
 
             if (!localGroupToUserMap.containsKey(group)) {
                 groupsFoundOnlyOnRemoteEnd.add(group);
-            } else if (!remoteGroupToUserMap.containsKey(group)) {
+            } else if (!allRemoteGroups.contains(group)) {
                 groupsFoundOnlyOnLocalEnd.add(group);
             } else {
-                collectDifferences(group, localGroupToUserMap.get(group), remoteGroupToUserMap.get(group),
+                collectDifferences(group,
+                        localGroupToUserMap.getOrDefault(group, Collections.emptySet()),
+                        remoteGroupToUserMap.getOrDefault(group, Collections.emptySet()),
                         groupSuffix, addCommands, removeCommands, user2group);
             }
         }

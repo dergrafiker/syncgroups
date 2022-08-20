@@ -62,4 +62,11 @@ public class ReadResources {
                     );
         }
     }
+
+    public static Set<String> readAllRemoteGroups(String resourceName) throws IOException {
+        return readLinesFromExternalFile(resourceName).stream()
+                .filter(s -> StringUtils.contains(s, '@'))
+                .map(s -> StringUtils.substringBefore(s.toLowerCase(), "@"))
+                .collect(Collectors.toSet());
+    }
 }
