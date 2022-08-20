@@ -33,6 +33,7 @@ public class ReadResources {
 
     static Map<String, Set<String>> readIntendedGroupToUserMapFromExternalFile(String resourceName) throws IOException {
         return readLinesFromExternalFile(resourceName).stream()
+                .filter(StringUtils::isNotBlank)
                 .map(String::toLowerCase)
                 .map(line -> line.split(":"))
                 .collect(groupingBy(groupAndUserEmail -> groupAndUserEmail[0],
