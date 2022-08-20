@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -70,8 +71,8 @@ public class Main {
         collectDifferences(catchAll, allMailsInLocalMapping, allMailsFromRemote, groupSuffix, addCommands, removeCommands, user2group);
 
         Set<String> usersThatShouldBePresentInOtherGroups = new HashSet<>();
-        usersThatShouldBePresentInOtherGroups.addAll(remoteGroupToUserMap.get(needsToHaveOneInEachGroupKey));
-        usersThatShouldBePresentInOtherGroups.addAll(localGroupToUserMap.get(needsToHaveOneInEachGroupKey));
+        usersThatShouldBePresentInOtherGroups.addAll(remoteGroupToUserMap.getOrDefault(needsToHaveOneInEachGroupKey, Collections.emptySet()));
+        usersThatShouldBePresentInOtherGroups.addAll(localGroupToUserMap.getOrDefault(needsToHaveOneInEachGroupKey, Collections.emptySet()));
 
         remoteGroupToUserMap.forEach((key, value) -> {
             if (Sets.intersection(value, usersThatShouldBePresentInOtherGroups).isEmpty()) {
