@@ -83,7 +83,10 @@ public class Main {
         System.out.println("groups found only remote: " + StringUtils.join(groupsFoundOnlyOnRemoteEnd, ", "));
         System.out.println("groups found only local: " + StringUtils.join(groupsFoundOnlyOnLocalEnd, ", "));
         System.out.println();
-        user2group.keySet().forEach(key -> System.out.println(key + " " + user2group.get(key)));
+
+        new ArrayList<>(user2group.keySet()).stream().sorted()
+                .forEach(key -> System.out.println(key + " " + user2group.get(key)));
+
         System.out.println();
         System.out.println("run following commands to match groups to mapping:");
         addCommands.forEach(System.out::println);
