@@ -71,8 +71,8 @@ public class Main {
 
         //collect Differences for catchall group
         Set<String> allMailsInLocalMapping = localGroupToUserMap.values().stream().flatMap(Collection::stream).collect(toSet());
-        Set<String> allMailsFromRemote = remoteGroupToUserMap.get(catchAll);
-        collectDifferences(catchAll, allMailsInLocalMapping, allMailsFromRemote, groupSuffix, addCommands, removeCommands, user2group);
+        Set<String> allMailsInCatchallFromRemote = remoteGroupToUserMap.get(catchAll);
+        collectDifferences(catchAll, allMailsInLocalMapping, allMailsInCatchallFromRemote, groupSuffix, addCommands, removeCommands, user2group);
 
         Set<String> usersThatShouldBePresentInOtherGroups = new HashSet<>();
         usersThatShouldBePresentInOtherGroups.addAll(remoteGroupToUserMap.getOrDefault(needsToHaveOneInEachGroupKey, Collections.emptySet()));
