@@ -88,7 +88,7 @@ public class Main {
         System.out.println("groups found only local: " + StringUtils.join(groupsFoundOnlyOnLocalEnd, ", "));
         System.out.println();
 
-        new ArrayList<>(user2group.keySet()).stream().sorted()
+        user2group.keySet().stream().sorted()
                 .forEach(key -> System.out.println(key + " " + user2group.get(key)));
 
         System.out.println();
