@@ -33,10 +33,8 @@ public class ReadResources {
 
     static Map<String, Set<String>> readIntendedGroupToUserMapFromExternalFile(String resourceName) throws IOException {
         return readLinesFromExternalFile(resourceName).stream()
-                .filter(StringUtils::isNotBlank)
-                .filter(s -> StringUtils.contains(s,':'))
-                .map(String::toLowerCase)
-                .map(line -> line.split(":"))
+                .filter(cs -> StringUtils.isNotBlank(cs) && StringUtils.contains(cs, ':'))
+                .map(str -> StringUtils.split(StringUtils.lowerCase(str), ':'))
                 .collect(groupingBy(groupAndUserEmail -> groupAndUserEmail[0],
                         mapping(strings -> strings[1], toSet())
                 ));
@@ -66,7 +64,7 @@ public class ReadResources {
     public static Set<String> readAllRemoteGroups(String resourceName) throws IOException {
         return readLinesFromExternalFile(resourceName).stream()
                 .filter(s -> StringUtils.contains(s, '@'))
-                .map(s -> StringUtils.substringBefore(s.toLowerCase(), "@"))
+                .map(s -> StringUtils.substringBefore(StringUtils.lowerCase(s), "@"))
                 .collect(Collectors.toSet());
     }
 }
