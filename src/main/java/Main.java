@@ -16,9 +16,9 @@ import static java.util.stream.Collectors.toSet;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        String catchAll = args[0];
-        String groupSuffix = args[1];
-        String needsToHaveOneInEachGroupKey = args[2];
+        String catchAll = args[0]; //group into which every address will be put
+        String groupSuffix = args[1]; //suffix to add after group name e.g. '@example.com'
+        String needsToHaveOneInEachGroupKey = args[2]; //group that every other group should have one or more members of
 
         Map<String, Set<String>> localGroupToUserMap = ReadResources.readIntendedGroupToUserMapFromExternalFile("mapping");
         Map<String, Set<String>> remoteGroupToUserMap = ReadResources.readCurrentGroupToUserMapFromRemoteCSV("groups.csv");
